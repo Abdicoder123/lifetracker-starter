@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./LandingPage/LandingPage";
@@ -8,15 +9,15 @@ import NutritionPage from "./nutrition/NutritionPage";
 //import logo from "./logo.svg";
 import "./App.css";
 import Navbar from "./Navbar";
-import Container from "@mui/material/Container";
+//import Container from "@mui/material/Container";
 
 export default function App() {
-  const [count, setCount] = useState(0);
+  //const [count, setCount] = useState(0);
 
   return (
     <>
-      <Navbar></Navbar>
       <BrowserRouter>
+        <Navbar />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
