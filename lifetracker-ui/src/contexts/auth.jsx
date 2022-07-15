@@ -10,11 +10,12 @@ export const AuthContextProvider = ({ children }) => {
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [error, setError] = React.useState("");
   const [testUser, setTestUser] = React.useState({});
-  
+
   React.useEffect(async () => {
-    if(localStorage.getItem("lifetracker_token")){
+    if (localStorage.getItem("lifetracker_token")) {
       ApiClient.setToken(localStorage.getItem("lifetracker_token"));
     }
+
     setIsProcessing(true);
     setInitial(false);
     try {
@@ -29,50 +30,48 @@ export const AuthContextProvider = ({ children }) => {
     setInitial(true);
   }, []);
 
-
-const loginUser = (email,password) => {
-  const req = async () => {
-    try {
-      const getData = await ApiClient.login({
-        email: email,
-        password: password,
-      });
-      ApiClient.setToken(getData.data.token)
-      setUser(getData.data.user);
-    } catch (err) {
-      console.log(err);
-      setError(err);
-    }
-  };
-  req();
-}
-
-const signUpUser = async (data) => {
-    let obj = {
-        username: data.username,
-        password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-      };
+  const loginUser = (email, password) => {
+    const req = async () => {
       try {
-        const getData = await ApiClient.signup({
-          credentials: obj,
+        const getData = await ApiClient.login({
+          email: email,
+          password: password,
         });
-        
-        ApiClient.setToken(getData.data.token)
+        ApiClient.setToken(getData.data.token);
         setUser(getData.data.user);
       } catch (err) {
         console.log(err);
+        setError(err);
       }
-  }
+    };
+    req();
+  };
+
+  const signUpUser = async (data) => {
+    let obj = {
+      username: data.username,
+      password: data.password,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+    };
+    try {
+      const getData = await ApiClient.signup({
+        credentials: obj,
+      });
+
+      ApiClient.setToken(getData.data.token);
+      setUser(getData.data.user);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const logOutUser = () => {
-      ApiClient.removeToken();
-      location.reload();
-      return false;
-  }
-
+    ApiClient.removeToken();
+    location.reload();
+    return false;
+  };
 
   const authValue = { user, setUser, loginUser, signUpUser, logOutUser, error };
 
@@ -84,4 +83,3 @@ const signUpUser = async (data) => {
 };
 
 export const useAuthContext = () => useContext(AuthContext);
-
