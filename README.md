@@ -4,15 +4,18 @@
 
 Submitted by: Abdirahman Ali
 
-Deployed Application: [Lifetracker Deployed Site](ADD_LINK_HERE)
+Deployed Application: [Lifetracker Deployed Site](torpid-apparel.surge.sh)
+https://www.loom.com/share/925b288e98564c68a2e3baa2bcec7e04
 
 ## Application Features
+
+The login is a bit wonky since I set it up
 
 ### Core Features
 
 - [x] **The Nav Bar:** Implement customized views for users who are logged in vs not logged in.
   - [ ] If the user is logged in, it should display a **Sign Out** button.
-  - [ ] If no user is logged in, it should display **Login** and **Register** buttons
+  - [x] If no user is logged in, it should display **Login** and **Register** buttons
   - [x] Display a logo on the far left side, and contain links to the individual detailed activity page.
 - [x] **The Landing Page:** Display a large hero image and a brief blurb on what this application is about
 - [x] **Login Page:** A form that allows users to login with email and password.

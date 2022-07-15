@@ -1,66 +1,68 @@
+const { BadRequestError, UnauthorizedError, NotFoundError } = require("../utils/errors");
 const db = require("../db");
-const { BadRequestError } = require("../utils/errors");
+const User = require("../models/user");
+
 
 class Nutrition {
-  static async listNutritionForUser(user) {
-    const result = await db.query(
-      ` SELECT * 
-        FROM nutrition
-        WHERE user_id = $1;
-      `,
-      [user.id]
-    );
+    static async createNutrition(data){
+        const requiredFields = ["name", "category", "calories", "image_url", "email"];
+        requiredFields.forEach((element) => {
+            if(!data.hasOwnProperty(element)){
+                throw new BadRequestError(`Missing ${element} in request body`)
+            }
+        });
 
-    return result.rows;
-  }
+        const user = await User.fetchUserByEmail(data.email);
+        const user_id = user.id;
 
-  static async postNutrition({ nutritions, user }) {
-    if (nutritions.nutrient.length === 0) {
-      throw new BadRequestError("No nutrient name provided");
-    }
-
-    if (nutritions.category.length === 0) {
-      throw new BadRequestError("No nutrition category provided");
-    }
-
-    if (nutritions.imageUrl.length === 0) {
-      throw new BadRequestError("Must provide imageUrl");
-    }
-
-    if (nutritions.quantity === 0) {
-      throw new BadRequestError("Nutrition quantity cannot be zero");
-    }
-
-    if (nutritions.calories === 0) {
-      throw new BadRequestError("Nutrition calories cannot be zero");
-    }
-
-    const result = await db.query(
-      `
-            INSERT INTO nutrition(
-                nutrient,
-                category,
-                quantity,
-                calories,
-                imageUrl,
-                user_id
+        if(user){
+        const result = await db.query(   
+            `INSERT INTO nutrition(
+                    name,
+                    category,
+                    calories,
+                    image_url,
+                    user_id
+                )
+                VALUES ($1, $2, $3, $4, $5)
+                RETURNING id, name, category, calories, image_url, user_id;
+                `, 
+                    [data.name, data.category, data.calories, data.image_url, user_id]
             )
-            VALUES ($1,$2,$3,$4,$5,$6)
-            RETURNING user_id,nutrient,category,quantity,calories;
-            `,
-      [
-        nutritions.nutrient,
-        nutritions.category,
-        nutritions.quantity,
-        nutritions.calories,
-        nutritions.imageUrl,
-        user.id,
-      ]
-    );
+        
 
-    const res = result.rows[0];
-    return res;
-  }
+        const nutritionData = result.rows[0];
+        return nutritionData;
+    }
+    }
+
+    static async fetchNutritionById(id){
+        if(!id){
+            throw new BadRequestError("Need Valid Id");
+        }
+
+        const query = `SELECT * FROM nutrition WHERE id = $1`
+        const result = await db.query(query, [id]);
+        if(result.rows.length <= 0){
+            throw new NotFoundError("ID Not Found");
+        }
+
+        const nutrition = result.rows[0];
+        return nutrition;
+    }
+
+    static async listNutritionForUser(id){
+        if(!id){
+            throw new BadRequestError("Need Valid Id");
+        }
+
+        const query = `SELECT * FROM nutrition WHERE user_id = $1`
+        const result = await db.query(query, [id]);
+
+        const nutrition = result.rows;
+        return nutrition;
+    }
 }
+
 
 module.exports = Nutrition;

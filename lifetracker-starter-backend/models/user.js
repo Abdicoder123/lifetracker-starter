@@ -1,135 +1,98 @@
+const { BadRequestError, UnauthorizedError } = require("../utils/errors");
+const { BCRYPT_WORK_FACTOR } = require('../config.js');
 const bcrypt = require("bcrypt");
 const db = require("../db");
-const { BCRYPT_WORK_FACTOR } = require("../config");
-const { BadRequestError, UnauthorizedError } = require("../utils/errors");
 
-class User {
-  static async makePublicUser(user) {
-    return {
-      id: user.id,
-      firstName: user.firstname,
-      lastName: user.lastname,
-      email: user.email,
-      username: user.username,
-    };
-  }
-
-  static async login(credentials) {
-    const requiredFields = ["email", "password"];
-    requiredFields.forEach((field) => {
-      if (!credentials.hasOwnProperty(field)) {
-        throw new BadRequestError(`Missing ${field} in request body.`);
-      }
-    });
-    if (credentials.email.indexOf("@") <= 0) {
-      throw new BadRequestError("Invalid email.");
+class User{
+    static async makePublicUser(user){
+        const publicUser = {
+            id: user.id,
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name
+        }
+       return publicUser; 
     }
 
-    if (credentials.password.length < 1) {
-      throw new BadRequestError("Please input password");
+    //function used for login and add to db
+    static async login(credentials) {
+        const registerFields = ["password", "email"];
+
+        registerFields.forEach((element) => {
+            if(!credentials.hasOwnProperty(element)){
+                throw new BadRequestError(`Missing ${element} in request body`);
+            }
+        });
+
+        const user = await User.fetchUserByEmail(credentials.email);
+
+        if(user){
+            const isValid = await bcrypt.compare(credentials.password, user.password)
+            if(isValid){
+                this.latestUser = user;
+                return User.makePublicUser(user);
+            }
+        }
+        throw new UnauthorizedError("Wrong Password");
     }
 
-    const user = await User.fetchUserByEmail(credentials.email);
+    static async register(credentials){ 
+        const userData = credentials.credentials
+        const registerFields = ["username", "password", "firstName", "lastName", "email"];
+        registerFields.forEach((element) => {
+            if(!userData.hasOwnProperty(element)){
+                throw new BadRequestError(`Missing ${element} in request body`);
+            }
+        });
 
-    if (user) {
-      const isValid = await bcrypt.compare(credentials.password, user.password);
-      if (isValid) {
-        return this.makePublicUser(user);
-      }
-    }
+        const existingUser = await User.fetchUserByEmail(userData.email);
+        if(existingUser){
+            throw new BadRequestError(`Email already exists`);
+        }
 
-    throw new UnauthorizedError("Invalid email/password combo");
-  }
+        if(userData.email.indexOf("@") <= 0){
+            throw new BadRequestError("Invalid Email");
+        }
 
-  static async register(credentials) {
-    const requiredFields = [
-      "firstName",
-      "lastName",
-      "username",
-      "email",
-      "password",
-    ];
-    requiredFields.forEach((field) => {
-      if (!credentials.hasOwnProperty(field)) {
-        throw new BadRequestError(`Missing ${field} in request body.`);
-      }
-    });
+        const lowercaseEmail = userData.email.toLowerCase();
+        const hashedPassword = await bcrypt.hash(userData.password, BCRYPT_WORK_FACTOR);
+        const updated_at = "2021-01-01"
 
-    if (credentials.email.indexOf("@") <= 0) {
-      throw new BadRequestError("Invalid email.");
-    }
 
-    if (credentials.password.length < 1) {
-      throw new BadRequestError("Please input password");
-    }
-
-    const existingUser = await User.fetchUserByEmail(credentials.email);
-    if (existingUser) {
-      throw new BadRequestError(`Email already exists: ${credentials.email}`);
-    }
-
-    const existingUsername = await User.checkUsername(credentials.username);
-    if (existingUsername) {
-      throw new BadRequestError(
-        `Username already exists: ${credentials.username}`
-      );
-    }
-
-    const hashedPassword = await bcrypt.hash(
-      credentials.password,
-      BCRYPT_WORK_FACTOR
-    );
-
-    const lowercasedEmail = credentials.email.toLowerCase();
-
-    const result = await db.query(
-      `
-        INSERT INTO users(
-            firstName,
-            lastName,
-            email,
-            username,
-            password
+        const result = await db.query(
+            
+        `INSERT INTO users(
+                username,
+                password,
+                first_name,
+                last_name,
+                email,
+                updated_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, username, password, first_name, last_name, email, updated_at;
+            `, 
+                [userData.username, hashedPassword, userData.firstName, userData.lastName, lowercaseEmail, updated_at]
         )
-        VALUES ($1,$2,$3,$4,$5)
-        RETURNING id,firstName,lastName,email,username;
-        `,
-      [
-        credentials.firstName,
-        credentials.lastName,
-        lowercasedEmail,
-        credentials.username,
-        hashedPassword,
-      ]
-    );
 
-    const user = result.rows[0];
+        const user = result.rows[0];
+        return user;
 
-    return User.makePublicUser(user);
-  }
-
-  static async fetchUserByEmail(email) {
-    if (!email) {
-      throw new BadRequestError("No email provided");
     }
 
-    const query = `SELECT * FROM users WHERE email = $1`;
-    const result = await db.query(query, [email.toLowerCase()]);
-    const user = result.rows[0];
+    //Grabs email from database.
+    static async fetchUserByEmail(email){
+        if(!email){
+            throw new BadRequestError("Need Valid Email");
+        }
 
-    return user;
-  }
+        const query = `SELECT * FROM users WHERE email = $1`
+        const result = await db.query(query, [email.toLowerCase()]);
 
-  static async checkUsername(username) {
-    if (!username) {
-      throw new BadRequestError("No username provided");
+        const user = result.rows[0];
+        return user;
     }
 
-    const query = `SELECT * FROM users WHERE username = $1`;
-    const result = await db.query(query, [username]);
-    const user = result.rows[0];
-    return user;
-  }
 }
 
 module.exports = User;

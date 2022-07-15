@@ -1,30 +1,47 @@
 const express = require("express");
-const Nutrition = require("../models/nutrition");
 const router = express.Router();
 const User = require("../models/user");
+const { createUserJwt } = require("../utils/tokens");
 const security = require("../middleware/security");
+const Nutrition = require("../models/nutrition");
 
-router.get("/", security.requireAuthenticatedUser, async (req, res, next) => {
-  try {
-    var { user } = res.locals;
 
-    const nutritions = await Nutrition.listNutritionForUser(user);
-    res.status(200).json({ nutritions: nutritions });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get("/", security.requireAuthenticatedUser, async (req,res,next) => {
+    try{
+        const { email } = res.locals.user;
+        const user = await User.fetchUserByEmail(email);
+        const nutrition = await Nutrition.listNutritionForUser(user.id);
+        return res.status(200).json({ nutrition }); 
+    }
+    catch(err){
+        console.log(err);
+    }
+})
 
-router.post("/", security.requireAuthenticatedUser, async (req, res, next) => {
-  try {
-    const { user } = res.locals;
+router.get("/:nutritionId", async (req,res,next) => {
+    try{
+        const id = req.params.nutritionId;
+        const nutritionItem = await Nutrition.fetchNutritionById(id);
+        res.status(200).json({ nutritionItem })
+    }
+    catch(err){
+        next(err);
+    }
+})
 
-    const nutritions = req.body;
-    const nutrition = await Nutrition.postNutrition({ nutritions, user });
-    return res.status(200).json({ nutrition: nutrition });
-  } catch (err) {
-    next(err);
-  }
-});
+
+router.post("/", async (req,res,next) => { 
+    try {
+        const makeNutrition = await Nutrition.createNutrition(req.body);
+        const user = await User.fetchUserByEmail(req.body.email);
+        const nutrition = await Nutrition.listNutritionForUser(user.id);
+        return res.status(200).json({ nutrition });
+    }
+    catch(err){
+        next(err);
+    }
+})
+
+
 
 module.exports = router;

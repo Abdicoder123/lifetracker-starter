@@ -1,60 +1,52 @@
+const { BadRequestError, UnauthorizedError, NotFoundError } = require("../utils/errors");
 const db = require("../db");
-const { BadRequestError } = require("../utils/errors");
+const User = require("../models/user");
 
-class Exercise {
-  static async listExerciseForUser(user) {
-    const result = await db.query(
-      ` SELECT * 
-        FROM exercise
-        WHERE user_id = $1;
-      `,
-      [user.id]
-    );
+class Exercise{
 
-    return result.rows;
-  }
+    static async makeExerciseEntry(data){
+        const requiredFields = ["name", "category", "duration"];
+        requiredFields.forEach((e) => {
+            if(!data.hasOwnProperty(e)){
+                throw new BadRequestError(`Missing ${element} in Request Body`);
+            }
+        });
 
-  static async postExercise({ exercises, user }) {
-    if (exercises.exercise.length === 0) {
-      throw new BadRequestError("No exercise name provided");
+        const user = await User.fetchUserByEmail(data.email);
+        const user_id = user.id;
+
+        const result = await db.query(
+            `
+            INSERT INTO exercise(
+                name,
+                category,
+                duration,
+                user_id 
+            )
+            VALUES ($1, $2, $3, $4)
+            RETURNING id, name, category, duration, user_id, created_at;
+            `,
+                [data.name, data.category, data.duration, user_id]
+        );
+
+        const exerciseEntry = result.rows[0];
+        return exerciseEntry;
     }
 
-    if (exercises.category.length === 0) {
-      throw new BadRequestError("No exercise category provided");
+
+    static async listExercisesForUser(id){
+        if(!id){
+            throw new BadRequestError("Need Valid ID");
+        }
+
+        const query = `SELECT * FROM exercise WHERE user_id = $1`;
+        const result = await db.query(query, [id]);
+        const exercises = result.rows;
+        return exercises;
     }
 
-    if (exercises.duration === 0) {
-      throw new BadRequestError("Exercise duration cannot be zero");
-    }
 
-    if (exercises.intensity === 0) {
-      throw new BadRequestError("Exercise intensity cannot be zero");
-    }
 
-    const result = await db.query(
-      `
-        INSERT INTO exercise(
-            exercise,
-            category,
-            duration,
-            intensity,
-            user_id
-        )
-        VALUES ($1,$2,$3,$4,$5)
-        RETURNING user_id,exercise,category,duration,intensity;
-        `,
-      [
-        exercises.exercise,
-        exercises.category,
-        exercises.duration,
-        exercises.intensity,
-        user.id,
-      ]
-    );
-
-    const res = result.rows[0];
-    return res;
-  }
 }
 
 module.exports = Exercise;
