@@ -1,0 +1,82 @@
+.sleep-form{
+    margin: 0px;
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+.sleep-navBar{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.sleep-input-fields{
+    display: flex;
+    flex-direction: column;
+}
+.sleep-input{
+    padding: 10px;
+}
+::placeholder{
+    color: rgba(0,0,0,.8);
+}
+
+.input{
+    width: 500px;
+    height: 30px;
+    background-color: transparent;
+    border-width: 1px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: normal;
+    transition: border-style .15s, box-shadow .15s, background-color .15s;
+    margin-top: 10px;
+    padding: 20px 5px;
+}
+.input:focus{
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    box-shadow: 10px 5px 5px rgba(0, 0, 0, 0.5);
+}
+
+.sleep-label{
+    font-weight: bold;
+}
+
+.sleep-submit-button{
+    padding: 10px;
+    border:none;
+    background-color: #333;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity .15s, box-shadow .15s;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+.sleep-submit-button:hover{
+    opacity: .5;
+    box-shadow: 10px 5px 5px rgba(0, 0, 0, 0.5);
+}
+
+.log-sleep, .sleep-title{
+    background-color: transparent;
+    border: none;
+    font-weight: bolder;
+    font-size: 15px;
+}
+
+.log-sleep{
+    padding: 10px;
+    border:none;
+    background-color: #333;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity .15s;
+    border-radius: 10px;
+}
+
+.log-sleep:hover{
+    opacity: .5;
+}

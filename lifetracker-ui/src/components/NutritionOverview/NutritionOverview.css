@@ -1,0 +1,28 @@
+.nutrition-wrapper{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    text-align: center;
+    min-width: 30vw;
+}
+
+.nutrition-title{
+    color: black;
+}
+
+.create-Nutrition{
+    padding: 15px;
+    border: none;
+    font-weight: bold;
+    transition: background-color .15s;
+    cursor: pointer;
+}
+.create-Nutrition:hover{
+    background-color: #333;
+}
+
+.overview-title{
+    align-items: center;
+    text-align: center;
+}
