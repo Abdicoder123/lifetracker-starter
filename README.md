@@ -53,15 +53,15 @@ Implement any of the following features to improve the application:
 
 - Did the topics discussed in your labs prepare you to complete the assignment? Be specific, which features in your weekly assignment did you feel unprepared to complete?
 
-[Add your response here]
+The login set up helped a lot from the labs but I was still confused a bit.
 
 - If you had more time, what would you have done differently? Would you have added additional features? Changed the way your project responded to a particular event, etc.
 
-[Add your response here]
+If I had more time I would work out the bugs in my application.
 
 - Reflect on your project demo, what went well? Were there things that maybe didn't go as planned? Did you notice something that your peer did that you would like to try next time?
 
-[Add your response here]
+When I applied and made my apiClient and implemented it didn't seem to work out so well so that is something I would love to fix, that and my heroku deployment.
 
 ### Open-source libraries used
 
@@ -72,3 +72,4 @@ Implement any of the following features to improve the application:
 Give a shout out to somebody from your cohort that especially helped you during your project. This can be a fellow peer, instructor, TA, mentor, etc.
 
 [Add your response here]
+NO shoutouts
